@@ -1,0 +1,9 @@
+with 
+	var num , cat: int;
+	var f, car <- false : bool;
+begin
+for (car /= false)  \/ (cat> 4 )->
+ 	 f <- false;
+ 	 
+  end
+end
