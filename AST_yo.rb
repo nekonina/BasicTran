@@ -274,16 +274,7 @@ class Iteracion_DetStep
 			puts "\n El paso del ciclo debe ser una expresion numerica"
 			exit
 		end
-		$y = @start.valorR.to_i
-		#puts @step.valorR
-		while $y< @final.valorR.to_i do
-			$y = $y + @step.valorR.to_i
-		end
-		#puts "soy y: #{$y}"
-		if $y.to_i != @final.valorR.to_i
-			puts "su valor de step: #{@step.valor} llega mas alla de #{@final.valor}"
-			exit
-		end
+	
 
 	end
 
@@ -332,7 +323,7 @@ class Iteracion_Det
 
 	def to_s(tab)
 		s = (" "*tab) + "Ciclo For:\n"
-		s << (" "*(tab+2)) + "Iterador: " + @id.to_s() + "\n"
+		s << (" "*(tab+2)) + "Iterador: " + @id.to_s(tab+2) + "\n"
 		s << (" "*(tab+2)) + "Inicio del ciclo: " + @start.to_s()+ "\n"
 		s << (" "*(tab+2)) + "El ciclo termina en: " + @final.to_s()+ "\n"
 		s << (" "*(tab+2)) + "Instrucciones: \n" + @inst.to_s(tab+4)
@@ -468,9 +459,6 @@ class Argumento
 		@arg= arg	
 		if exp != nil
 			@tipo = @exp.tipo
-			@ini = true
-		else
-			@ini = false
 		end
 
 		
@@ -603,30 +591,6 @@ class Matriz < Tipo
 	end
 end
 
-class Salida
-
-	# == Atributos
-	#
-	# iteracion: recorre para poder imprimir todo lo que se le pase
-	# salida: imprime la expresion o caracter correspondiente
-	attr_accessor  :iteracion,:salida
-
-	def initialize(iteracion,salida)
-		@iteracion = iteracion
-		@salida = salida
-	end
-
-	def to_s(tab)
-		s = ""
-
-  		s << @iteracion.to_s(tab+4) + "\n"
-    	if @salida != nil
-    		s << (" "*10) +"siguiente Impresion: " + @salida.to_s(10)
-    	end
-    	return s
-	end
-end
-
 class ExpresionDosOper
 	# op1 	: 	Operador izquierdo de la expresión
 	# op2 	: 	Operador derecho de la expresión
@@ -711,7 +675,6 @@ class Modulo < ExpresionDosOper
 
     def initialize(op1,op2)
         super(op1, op2,"Modulo")
-        @valorR = @op1.valorR.to_i % @op2.valorR.to_i
     end
 end
 
@@ -728,7 +691,6 @@ class Multiplicacion < ExpresionDosOper
 
     def initialize(op1,op2)
         super(op1, op2,"Multiplicacion")
-        @valorR = @op1.valorR.to_i * @op2.valorR.to_i
     end
 end
 
@@ -737,7 +699,6 @@ class Suma < ExpresionDosOper
 
     def initialize(op1,op2)
         super(op1, op2,"Suma")
-        @valorR = @op1.valorR.to_i + @op2.valorR.to_i
     end
 end
 
@@ -746,7 +707,6 @@ class Resta < ExpresionDosOper
 
     def initialize(op1,op2)
         super(op1, op2,"Resta")
-        @valorR = @op1.valorR.to_i - @op2.valorR.to_i
     end
 end
 
@@ -755,12 +715,6 @@ class Division < ExpresionDosOper
 
     def initialize(op1,op2)
         super(op1, op2,"Division")
-        if @op2.valorR != 0
-        	@valorR = @op1.valorR.to_i / @op2.valorR.to_i
-        else
-        	puts "no puedes realizar divisiones entre 0 \n"
-        	exit
-        end
     end
 end
 

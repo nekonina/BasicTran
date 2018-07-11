@@ -7,7 +7,6 @@ begin
     begin
         
         x <- 42;
-        r <- true;
         p <- false;
 
     end

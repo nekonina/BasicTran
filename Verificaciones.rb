@@ -4,12 +4,13 @@ require_relative 'AST_yo'
 require_relative 'Parser'
 
 #crearemos nuestra tabla de scopes
-$scopes = []
-$scopeImp =[]
-$noIni = []
+$scopes = [] 	#scopes para operar
+$scopeImp =[] 	#scopes para imprimir
+$noIni = [] 	#lista para verificar si esta o no inicializada la variable al momento de operarla
 $tam = 0
 $idFor = 0
 $idF = ""
+
 #verificamos si el id ya existe en la tabla de simbolos actuales
 def existeYa(tabla, id)
 	if tabla.empty?
@@ -214,26 +215,36 @@ class Asignacion
 		end
 
 		esta, tipo = Encontrar(@id.valor)
-		noInic, pos = verificarIni(@id.valor)
-		#puts "soy #{@id.valor} #{tipo}"
+		#puts "#{@tipo}"
+		#puts "soy #{@id.valor} #{noInic}"
 		if esta
+			noInic, pos = verificarIni(@id.valor)
 			if tipo != @tipo && @tipo != "variable"
 				puts ErrorTipo.new(@id.valor,tipo).to_s()
 				exit
 			elsif tipo != @tipo && @tipo == "variable"
 				#puts "entre"
-				
+				 #----------------------------------------------------------------------------------------
 				@expresion.verificacion()
-				#puts @expresion.tipo
+				#puts "#{@id.ini}"
 				@tipo = @expresion.tipo
-
+				#puts $noIni
+				#puts "\n -----------------"
 				#puts "soy #{@tipo}"
 				if noInic
 					$noIni.delete_at(pos)
 				end
+				#puts $noIni
 				if  tipo != @tipo
 					puts ErrorTipo.new(@id.valor,tipo).to_s()
 					exit
+				end
+			elsif tipo == @tipo
+				@expresion.verificacion()
+				#puts "#{@id.ini}"
+				#puts "soy #{@tipo}"
+				if noInic
+					$noIni.delete_at(pos)
 				end
 			end
 		else
@@ -247,7 +258,16 @@ class Variable < Literal
 
 	def verificacion()
 		esta, tipo = Encontrar(@valor)
+		if not esta
+			puts ErrorNoDeclarado.new(@valor).to_s()
+			exit
+		end
 		@tipo = tipo
+		noInic, pos = verificarIni(@valor)
+		if noInic
+			puts "\n Para operar con #{@valor} debe inicializarla primero" 
+			exit
+		end
 		#puts "#{@valor}"
 		return @valor
 	end

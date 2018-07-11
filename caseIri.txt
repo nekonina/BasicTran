@@ -1,0 +1,19 @@
+with 
+	var num , cat: int;
+	var f, car <- false , pepe<- true: bool;
+begin
+ cat <- 6/2;
+ read cat;
+ for k from 5 to (9*2+1) [step 2]->
+  cat <- cat + 2 ;
+ end
+if (cat <= 7)  ->
+ 	 cat <- cat + 2 ;
+ 	 print cat;
+ end
+ if (cat <= 5)  ->
+ 	 cat <- 10 ;
+otherwise ->
+ 	 print cat;
+ end
+end
