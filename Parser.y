@@ -111,19 +111,18 @@ rule
                                              {result = Iteracion_Det.new(val[1],val[3], val[5], val[7])}
 
                 | 'while' Expresion '->' Instrucciones  'end'         { result = Iteracion_Indet.new(val[1], val[3]) }
+                | Expresion ';'                                           { result = val[0]           }
                 ;
 
      Instrucciones: Instruccion                                        { result = val[0]           }
-                | Expresion  ';'                                       { result = val[0]           }
                 | Instrucciones  Instruccion                           { result = Instrucciones.new(val[0] , val[1])  }
-                | Instrucciones Expresion ';'                          {  result = Instrucciones.new(val[0] , val[1] ) }
                 ;
 
   LDeclaraciones: 'var' Declaracion                                    { result = LDeclaracionS.new(val[1]) }
                 | 'var' Declaracion LDeclaraciones                     { result = LDeclaracionRec.new(val[1], val[2] )}
                 ;          
 
-    Declaracion: Argumentos ':' Tipo ';'                         { result = Declaracion.new(val[0], val[2]) }
+    Declaracion: Argumentos ':' Tipo                          { result = Declaracion.new(val[0], val[2]) }
                 ;
 
       Argumentos: 'id' '<-' Expresion                           { result = Argumento.new(val[0].contenido , val[2], nil)}
@@ -166,6 +165,7 @@ rule
                |    '-' Expresion = UMINUS                                            { result = MenosUnario.new(val[1])    }
                |    '(' Expresion ')'                                                 { result = val[1]                       }
                |    '[' Expresion ']'                                                 { result = val[1]                       }
+               |    Expresion '[' Expresion ']'                                       { result = ValorArreglo.new(val[0],val[2])}
                ;
 
 ---- header ----

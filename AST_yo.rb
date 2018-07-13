@@ -47,7 +47,8 @@ class Asignacion
 		@expresion = expresion
 		@tipo = @expresion.tipo
 		@valor = expresion
-		if @id.tipo != "variable"
+
+		if @id.tipo != "variable" && @id.tipo != "arreglo"
 			puts "\n Para realizar un asignacion el identificador debe ser una variable definida"
 			exit
 		end
@@ -438,7 +439,37 @@ class Declaracion
 	def to_s(tab)
 		s = ""
 		s << (" "*(tab+2)) + "Argumentos: \n" + @argumentos.to_s(tab+4) + "\n"
-		s <<  @tipo.to_s(8)
+		s <<  @tipo.to_s(tab+4)
+		return s
+	end
+end
+
+class ValorArreglo
+
+	# == Atributos
+	#
+	# argumentos: argumentos correspondiente a la declaracion, referente a la declaracion de un conjunto de variable del mismo tipo
+	# tipo: tipo de la variable que se esta declarando
+	attr_accessor  :id, :elemento, :tipo
+
+	def initialize(id, elemento)
+		@id = id
+		@elemento= elemento
+		@tipo = "arreglo"
+		if @id.tipo != 'variable' 
+			puts "Para acceder a un arreglo el identificador debe ser una variable"
+			exit
+		elsif @elemento.tipo != "entero"
+			puts "Para acceder a la posicion de un arreglo debe hacerlo con un entero"
+			exit
+		end
+			
+
+	end
+
+	def to_s(tab)	
+		s =  "\n"+(" "*(tab+2)) + "Arreglo: " + @id.to_s(tab+4)
+		s <<  (" "*(tab+2)) + "Elemento:" + @elemento.to_s(tab+4) + "\n"
 		return s
 	end
 end
@@ -546,7 +577,7 @@ class Tipo
 	# == Atributos
 	#
 	# tipo 	: 	Tipo de dato (num o bool)
-	attr_accessor :tipo
+	attr_accessor :tipo, :tipoI
 
 	def initialize( tipo )
 		@tipo = tipo
@@ -584,10 +615,11 @@ end
 class Matriz < Tipo
 	def initialize( tam, tipo)
 		@tam = tam
-		@tipo = tipo
+		@tipoI = tipo
+		@tipo = "arreglo"
 	end
 	def to_s(tab)
-		return (" "*(tab+6))+ "Arreglo de tamaño: "  + @tam.to_s(tab)+ "\n"+ @tipo.to_s(tab)
+		return (" "*(tab+6))+ "Arreglo de tamaño: "  + @tam.to_s(tab+4)+ "\n"+ @tipoI.to_s(tab+4)
 	end
 end
 
