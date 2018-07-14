@@ -309,6 +309,7 @@ class Asignacion
 			#puts $tabla
 		else
 			@id.valores()
+			puts @id.tamA
 			arr = $tabla[@id.valor]
 			e = arr[@id.tamA[0].to_i]
 		
@@ -396,7 +397,8 @@ end
 class Concatenacion 		#--------------------------------------------------------------------------------------------------------------
 
     def valores()
-        
+       $tabla[@op1.valor] = $tabla[@op1.valor].concat($tabla[@op2.valor])
+       puts $tabla
     end
 end
 
@@ -529,13 +531,17 @@ end
 class SiguienteCar #----------------------------------------------------------------------------------------------------------------
 
 	def valores()
+		e = @op.valores().to_a + 1
+		return e.chr
 	end
 end
 
 
-class AnteriorCar #----------------------------------------------------------------------------------------------------------------
+class AnteriorCar 
 
     def valores()
+    	e = @op.valores().to_a - 1
+		return e.chr
 	end
 end
 

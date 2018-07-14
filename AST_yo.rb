@@ -705,9 +705,8 @@ class ExpresionDosOper
 		@valor = @op1.valor + $simbolos[@oper] + @op2.valor
 
 		if @oper == "Concatenacion"
-			if @op1.tipo == "caracter" && @op2.tipo == "caracter"
-				@tipo = "caracter"
-			elsif @op1.tipo == "variable" && @op2.tipo == "caracter" || @op1.tipo == "caracter" && @op2.tipo == "variable" || @op1.tipo == "variable" && @op2.tipo == "variable"
+			if @op1.tipo == "arregloA" && @op2.tipo == "arregloA" || @op1.tipo == "arregloA" && @op2.tipo == "variable" || @op1.tipo == "variable" && @op2.tipo == "arregloA" || @op1.tipo == "variable" && @op2.tipo == "variable"
+
 				@tipo = "variable"
 			else  @tipo = "error"
 			end

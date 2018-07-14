@@ -1,10 +1,11 @@
 with 
 	var num <-1 , cat: int
 	var f, car <- false , pepe<- true: bool
-	var a : array [3] of array [4] of int
+	var a : array [3] of array [3] of int
+	var b : array [3] of array [3] of int
 begin
 
 a[1][1] <- 4;
 cat <- a[1][1];
-a[0][0] <- cat + 2;
+b[0][0] <- a[1][1]+ 2 ;
 end

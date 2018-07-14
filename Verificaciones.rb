@@ -426,7 +426,33 @@ class ExpresionDosOper
 					puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
 					exit
 				end
+			elsif @op1.tipo == "arreglo" && @op2.tipo == "arreglo"
+
+			#verificamos si las variables que se van operan estan inicializadas
+			#puts @op1.valor
 			
+
+			@op2.verificacion()
+			@op1.verificacion()
+
+			#puts "entre"
+			#puts @op2.tipo
+			#puts @op1.tipo
+			#puts @oper
+			#puts "-------------------"
+			
+				if @op2.tipo != @op1.tipo
+					puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
+					exit
+				else
+					@tipo = @op2.tipo
+					decidir()
+					#puts @tipo
+				end
+				if @tipo == "error"
+					puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
+					exit
+				end
 		elsif @op1.tipo == "arregloA" && @op2.tipo == "arregloA"
 			@op2.verificacion()
 			@op1.verificacion()
