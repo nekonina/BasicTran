@@ -10,6 +10,7 @@ $noIni = [] 	#lista para verificar si esta o no inicializada la variable al mome
 $tam = 0
 $idFor = 0
 $idF = ""
+$valores = []
 
 #verificamos si el id ya existe en la tabla de simbolos actuales
 def existeYa(tabla, id)
@@ -94,6 +95,7 @@ class IncompatiblesSigno <ErrorContexto
 		@token1 = token1
 		@token2 = token2
 		@oper = oper
+
 	end
 
 	def to_s()
@@ -174,14 +176,26 @@ class Argumento
 			exit
 		else
 			if @exp == nil 
-				if tipoP.tipo == 'entero' ||tipoP.tipo == 'booleano' || tipoP.tipo == 'caracter'
+				if @tipoId == 'arregloA' || @tipoId == 'matrizA'
+					puts "NO puedes acceder a un elemento que no a sido asignado"
+					exit
+				elsif tipoP.tipo == 'entero' ||tipoP.tipo == 'booleano' || tipoP.tipo == 'caracter'
 					tabla[@id]= tipoP.tipo
+					@tipoR = [tipoP.tipo]
+					$noIni.insert(0, @id)
+				elsif tipoP.tipo == 'arreglo'
+					tabla[@id]= [tipoP.tipoI, tipoP.tipo]
+					@tipoR = [tipoP.tipoI, tipoP.tipo]
+					@tam = tipoP.dim
 				else 
 					tabla[@id]= tipoP
+					$noIni.insert(0, @id)
+					@tipoR = [tipoP.tipo]
 				end
-				$noIni.insert(0, @id)
+				
 			elsif tipoP.tipo == @tipo
 				tabla[@id]= tipoP.tipo
+				@tipoR = [tipoP.tipo]
 			else
 				puts ErrorNoCoincide.new(@id,@exp.valor,tipoP.tipo).to_s()
 				exit
@@ -199,8 +213,17 @@ class ArgumentoId
 			puts ErrorYaExiste.new(@id).to_s()
 			exit
 		else	
-			tabla[@id]= tipoP.tipo
-			$noIni.insert(0, @id)
+			if tipoP.tipo == 'arreglo'
+				tabla[@id]= [tipoP.tipoI, tipoP.tipo]
+				@tipoR = [tipoP.tipoI, tipoP.tipo]
+				@tam = tipoP.dim
+
+			else
+				tabla[@id]= tipoP.tipo
+				@tipoR = [tipoP.tipo]
+				$noIni.insert(0, @id)
+			end
+			
 		end
 		@exp.verificacion(tabla, tipoP)
 	end
@@ -213,44 +236,112 @@ class Asignacion
 			puts "\n No puedes realizar asignaciones sobre '#{@id}' dentro de este bloque"
 			exit
 		end
-
-		esta, tipo = Encontrar(@id.valor)
-		#puts "#{@tipo}"
-		#puts "soy #{@id.valor} #{noInic}"
-		if esta
-			noInic, pos = verificarIni(@id.valor)
-			if tipo != @tipo && @tipo != "variable"
-				puts ErrorTipo.new(@id.valor,tipo).to_s()
-				exit
-			elsif tipo != @tipo && @tipo == "variable"
-				#puts "entre"
-				 #----------------------------------------------------------------------------------------
-				@expresion.verificacion()
-				#puts "#{@id.ini}"
-				@tipo = @expresion.tipo
-				#puts $noIni
-				#puts "\n -----------------"
-				#puts "soy #{@tipo}"
-				if noInic
-					$noIni.delete_at(pos)
-				end
-				#puts $noIni
-				if  tipo != @tipo
+		if @id.tipo == 'variable'
+			esta, tipo = Encontrar(@id.valor)
+			#puts "soy #{@id.valor} #{noInic}"
+			if esta
+				puts @tipo
+				puts tipo
+				noInic, pos = verificarIni(@id.valor)
+				if tipo != @tipo && (@tipo != "variable" && @tipo != "arregloA")
 					puts ErrorTipo.new(@id.valor,tipo).to_s()
 					exit
+				elsif tipo != @tipo && @tipo == "variable"
+					#puts "entre"
+					 #----------------------------------------------------------------------------------------
+					@expresion.verificacion()
+					#puts "#{@id.ini}"
+					@tipo = @expresion.tipo
+
+					#puts $noIni
+					#puts "\n -----------------"
+					#puts "soy #{@tipo}"
+					if noInic
+						$noIni.delete_at(pos)
+					end
+					#puts $noIni
+					if  tipo != @tipo
+						puts ErrorTipo.new(@id.valor,tipo).to_s()
+						exit
+					end
+				elsif tipo != @tipo && @tipo == "arregloA"
+					#puts "entre"
+					 #----------------------------------------------------------------------------------------
+					@expresion.verificacion()
+					#puts "#{@id.ini}"
+					
+
+					puts @tipo
+					puts tipo
+					if noInic
+						$noIni.delete_at(pos)
+					end
+					#puts "\n -----------------"
+					#puts "soy #{@tipo}"
+
+					#puts $noIni
+					if  tipo !=  @expresion.tipoI
+						puts ErrorTipo.new(@id.valor,tipo).to_s()
+						exit
+					end
+				elsif tipo == @tipo
+					@expresion.verificacion()
+					#puts "#{@id.ini}"
+					#puts "soy #{@tipo}"
+					if noInic
+						$noIni.delete_at(pos)
+					end
 				end
-			elsif tipo == @tipo
-				@expresion.verificacion()
-				#puts "#{@id.ini}"
-				#puts "soy #{@tipo}"
-				if noInic
-					$noIni.delete_at(pos)
-				end
+			else
+				puts ErrorNoDeclarado.new(@id.valor).to_s()
+					exit
 			end
 		else
-			puts ErrorNoDeclarado.new(@id.valor).to_s()
-				exit
+			esta, tipo = Encontrar(@id.valor)
+			
+			#puts "soy #{@id.valor} #{noInic}"
+			if esta
+				#puts tipoI
+				if tipo[0] != @tipo && (@tipo != "variable" && @tipo != "arregloA")
+					puts ErrorTipo.new(@id.valor,tipo).to_s()
+					exit
+				else
+					puts "pase"
+					@expresion.verificacion()
+					
+				end
+			else
+				puts ErrorNoDeclarado.new(@id.valor).to_s()
+					exit
+			end
 		end
+	end
+end
+
+class ValorArreglo
+	def verificacion()
+		#puts @valor
+		esta, tipo = Encontrar(@valor)
+		if not esta
+			puts ErrorNoDeclarado.new(@valor).to_s()
+			exit
+		end
+		#puts esta
+		@tipoI = tipo[0]
+		#puts "#{@valor} #{tipo}"
+		return @tipoI
+	end
+end
+
+class ValorMatriz
+	def verificacion()
+		esta, tipo = Encontrar(@valor)
+		if not esta
+			puts ErrorNoDeclarado.new(@valor).to_s()
+			exit
+		end
+		#puts esta
+		@tipoI = tipo[0]
 	end
 end
 
@@ -279,7 +370,7 @@ class ExpresionDosOper
 		if @oper == "Concatenacion" && @tipo == "caracter"
 			@tipo = @tipo
 			
-		elsif (@oper == "Suma" ||  @oper == "Multiplicacion" || @oper == "Resta" || @oper == "Division" || @oper == "Punto" || @oper == "Modulo") && @op2.tipo== "entero"
+		elsif (@oper == "Suma" ||  @oper == "Multiplicacion" || @oper == "Resta" || @oper == "Division" || @oper == "Punto" || @oper == "Modulo") && @tipo== "entero"
 			@tipo = "entero"
 			#puts "aqui"
 		else 
@@ -294,6 +385,8 @@ class ExpresionDosOper
 	end
 
 	def verificacion()
+
+		
 		
 		if @op1.tipo == "variable" && @op2.tipo == "variable"
 
@@ -325,7 +418,7 @@ class ExpresionDosOper
 					puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
 					exit
 				else
-
+					@tipo = @op2.tipo
 					decidir()
 					#puts @tipo
 				end
@@ -334,7 +427,23 @@ class ExpresionDosOper
 					exit
 				end
 			
-
+		elsif @op1.tipo == "arregloA" && @op2.tipo == "arregloA"
+			@op2.verificacion()
+			@op1.verificacion()
+			if @op2.tipoI != @op1.tipoI
+				puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
+				exit
+			else
+				@tipo = @op1.tipoI
+				decidir()
+				return @tipo
+				#puts @tipo
+			end
+			if @tipo == "error"
+				puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
+				exit
+			end
+			
 		elsif @op2.tipo == "variable"
 			
 			noInic2, pos2 = verificarIni(@op2.valor)
@@ -346,18 +455,37 @@ class ExpresionDosOper
 			esta, @tipo1 = Encontrar(@op2.verificacion())
 			#puts "entre"
 			#puts "------"
-			if esta
-				if @tipo1 != @op1.tipo
+			if @tipo1 != @op1.tipo
+				puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
+				exit
+			else
+				@tipo = @op1.tipo
+				decidir()
+					
+			end
+			if @tipo == "error"
+				puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
+				exit
+			end
+			
+		elsif @op2.tipo == "arregloA"
+			
+			@op2.verificacion()
+			#puts "entre"
+			#puts "------"
+			#puts @ope2.tipoI
+				if @ope2.tipoI != @op1.tipo
 					puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
 					exit
 				else
+					@tipo = @op2.tipoI 
 					decidir()
 					
 				end
-			else
-				puts ErrorNoDeclarado.new(@op2.valor).to_s()
+				if @tipo == "error"
+					puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
 					exit
-			end
+				end
 
 		elsif @op1.tipo == "variable"
 			#puts @op1.valor
@@ -371,19 +499,39 @@ class ExpresionDosOper
 			#puts @tipo1
 			#puts @op2.tipo
 			#puts "------"
-			if esta
-				if @tipo1 != @op2.tipo
-					puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
-					exit
-				else
-					decidir()
-					#puts @tipo
-				end
+			
+			if @tipo1 != @op2.tipo
+				puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
+				exit
 			else
-
-				puts ErrorNoDeclarado.new(@op1.valor).to_s()
+				@tipo = @op2.tipo
+				decidir()
+					#puts @tipo
+			end
+			if @tipo == "error"
+				puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
 				exit
 			end
+			
+		elsif @op1.tipo == "arregloA"
+			#puts @op1.valor
+			@op1.verificacion()
+			#puts @op2.tipo
+			#puts "------"
+			
+			if @op1.tipoI != @op2.tipo
+				puts Incompatibles.new(@op1.valor,@op2.valor).to_s()
+				exit
+			else
+				@tipo = @op1.tipoI
+				decidir()
+				#puts @tipo
+			end
+			if @tipo == "error"
+				puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
+				exit
+			end
+
 		elsif  @op1.tipo != "variable" && @op2.tipo != "variable"
 			#puts "entrw"
 			#puts  @op1.valor
@@ -396,13 +544,14 @@ class ExpresionDosOper
 				@tipo = @op1.tipo
 				if (@tipo == "entero" || @tipo == "booleano") &&  (@oper == "Desigualdad" ||  @oper == "Menor" || @oper == "MenorIgual" || @oper == "Igual" || @oper == "Mayor" || @oper == "MayorIgual" || @oper == "And" || @oper == "Or")
 						@tipo = "booleano"
-						return @tipo
-					else
-						return @tipo
-					#puts @tipo
-					end
+				end
 				#puts @tipo
 			end
+			if @tipo == "error"
+					puts  IncompatiblesSigno.new(@op1.valor,@op2.valor,@oper).to_s()
+					exit
+			end
+			return @tipo
 		end
 	end
 end
@@ -416,51 +565,72 @@ end
 class ExpresionUnOperIzq
 	
 	def verificacion()
-		noInic, pos = verificarIni(@op.valor)
-		if noInic
-				puts "Para operar con #{@op1.valor} debe inicializarla primero" 
+		if @op.tipo == "variable"
+			@op.verificacion()
+			
+			if @op.tipo != "caracter"
+				puts "El tipo de la variable a usar en #{$simbolos[@oper]} debe ser caracter"
 				exit
+			end
+		elsif @op.tipo == "arregloA"
+			@op.verificacion()
+			#puts "hola #{@op.tipoI}"
+			if @op.tipoI != "caracter"
+				puts "El tipo de la variable a usar en #{$simbolos[@oper]} debe ser caracter"
+				exit
+			end
 		end
+
+		@tipo = "caracter"
+
+		return @tipo
 	end
 end
 
 class ExpresionUnOperDer
 	def decidir()
-		if @oper== "Not" && @tipo2 == "booleano"
+		if (@oper== "Not" && @op.tipo == "booleano") || @oper== "Not" && @op.tipoI == "booleano"
 				@tipo = "booleano"
-		elsif @oper== "MenosUnario" && @tipo2 == "entero"
+
+		elsif (@oper== "MenosUnario" &&@op.tipo == "entero") || @oper== "MenosUnario" &&@op.tipoI == "entero"
 				@tipo = "entero"
 		else
-			if @tipo2 == "caracter"
+			if @op.tipo == "caracter" || @op.tipoI == "caracter"
 				@tipo = "caracter"
 			else
 				@tipo = "error"
 			end
 		end
+		if @tipo == "error"
+			if @op.tipo == "arregloA"
+				@op.tipo = "arreglo"
+			end
+			puts "hay una inconsistencia en el tipo #{@op.valor}: #{@op.tipo} y el operador #{oper}"
+			exit
+		end
 	end
 
 	def verificacion()
-		noInic, pos = verificarIni(@op.valor)
-		if noInic
+		if @op.tipo == "arregloA"
+			@op.verificacion()
+			#puts "hola #{@op.tipoI}"
+			decidir()
+			
+			return @tipo				
+		
+		elsif @op.tipo == "variable"
+			noInic, pos = verificarIni(@op.valor)
+			if noInic
 				puts "Para operar con #{@op1.valor} debe inicializarla primero" 
 				exit
-		end
-		if @op1.tipo == "variable"
-			esta, @tipo2 = Encontrar(@op1.verificacion())
-			if esta
-				decidir()
-				if @tipo =="error"
-					puts ErrorTipo.new(@op1.valor,tipo).to_s()
-					exit
-				else
-					return @tipo
-				end
-			else
-				puts ErrorNoDeclarado.new(@op1.valor).to_s()
-				exit
 			end
-					
+			@op.verificacion()
+
+			decidir()
+		
+			return @tipo
 		end
+		
 	end
 end
 

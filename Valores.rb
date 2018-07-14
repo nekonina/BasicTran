@@ -4,7 +4,7 @@ require_relative 'AST_yo'
 require_relative 'Parser'
 require_relative 'Verificaciones'
 
-$valores = []
+
 
 class Programa
 	def valores()
@@ -90,7 +90,8 @@ end
 class Print
 
 	def valores()
-		puts "la instruccion Print saca como resultado: #{@salida.valores()} \n"
+		puts "la instruccion Print saca como resultado: "
+		@salida.valores()
 	end
 end
 class Read
@@ -184,6 +185,8 @@ end
 class Declaracion
 
 	def valores()
+		if @argumentos
+		end
 		@argumentos.valores()
 	end
 end
@@ -191,10 +194,24 @@ end
 class Argumento
 
 	def valores()
-		if @exp == nil 
-			$tabla[@id]= nil
+		if @exp == nil
+			if @tipoR.length == 2
+				if @tam.length == 2
+					$tabla[@id] = Array.new(@tam[0]) { Array.new(@tam[1]) }
+					puts $tabla
+				elsif @tam.length == 1
+					$tabla[@id] = Array.new(@tam[0])
+					puts $tabla
+				elsif @tam.length > 2
+				end
+			else
+				$tabla[@id]= nil
+			end
+			puts $tabla
 		else
+				
 			$tabla[@id]= @exp.valores()
+			
 		end
 		if @arg != nil
 			@arg.valores()
@@ -205,18 +222,109 @@ end
 class ArgumentoId
 
 	def valores()
-		$tabla[@id]= nil
-		@exp.valores()
+
+		if @tipoR.length == 2
+				if @tam.length == 2
+					$tabla[@id] = Array.new(@tam[0]) { Array.new(@tam[1]) }
+				elsif @tam.length == 1
+					$tabla[@id] = Array.new(@tam[0])
+					
+				elsif @tam.length > 2
+				end
+						puts $tabla
+		else
+			$tabla[@id]= nil
+			@exp.valores()
+		end
+
+	end
+end
+
+class ValorArreglo
+	def valores()
+		if @tamA[0].to_i > $tabla[@valor].length
+				puts "El indice #{@elemento.valor.to_i} es mas grande que la longitud de #{@id.valor}"
+				exit
+		end
+		#puts "soy #{@tamA}"
+		arr = $tabla[@valor]
+		e = arr[@tamA[0].to_i]
+		if @tamA.length == 2
+			if @tamA[1].to_i > e.length
+				puts "El indice #{@elemento2.valor.to_i} es mas grande que las columnas que tiene: #{@id.valor}"
+				exit
+			end
+			e1 = e[@tamA[1].to_i]
+			if e1 != nil
+				puts "El valor de #{@valor}[#{@tamA[0]}][#{@tamA[1]}] es #{e1}"
+			else
+				puts "El valor de #{@valor}[#{@tamA[0]}][#{@tamA[1]}] es nil"
+			end
+
+			return e[@tamA[1].to_i]
+		else
+
+			if e != nil
+				puts "El valor de #{@valor}[#{@elemento.valor}] es #{e}"
+			else
+				puts "El valor de #{@valor}[#{@elemento.valor}] es nil"
+			end
+			return e
+		end
+	end
+end
+
+class ValorMatriz
+	def valores()
+		#puts "entre"
+		if @elemento.valor.to_i > $tabla[@valor].length
+				puts "El indice #{@elemento.valor.to_i} es mas grande que las filas que tiene: #{@id.valor}"
+				exit
+		end
+		arr = $tabla[@valor]
+
+		e = arr[@elemento.valor.to_i-1]
+		if @elemento2.valor.to_i > e.length
+			puts "El indice #{@elemento2.valor.to_i} es mas grande que las columnas que tiene: #{@id.valor}"
+			exit
+		end
+		e1 = e[@elemento2.valor.to_i]
+		if e1 != nil
+			puts "El valor de #{@valor}[#{@elemento2.valor}][#{@elemento2.valor}] es #{e1}"
+		else
+			puts "El valor de #{@valor}[#{@elemento2.valor}][#{@elemento2.valor}] es nil"
+		end
+		return
 	end
 end
 
 class Asignacion
 	
 	def valores()
-		e = @expresion.valores()
-		puts "Realizamos la	asignacion de: #{e} a #{@id.valor} \n"
-		$tabla[@id.valor] = e
-
+		if @id.tipo == "variable"
+			e = @expresion.valores()
+			#puts e
+			puts "Realizamos la	asignacion de: #{e} a #{@id.valor} \n"
+			$tabla[@id.valor] = e
+			#puts $tabla
+		else
+			@id.valores()
+			arr = $tabla[@id.valor]
+			e = arr[@id.tamA[0].to_i]
+		
+			if @id.tamA.length == 2
+				e[@id.tamA[1].to_i]= @expresion.valores()
+				
+				arr[@id.tamA[0].to_i] = e
+				puts "Realizamos la	asignacion de: #{@expresion.valores()} a #{@id.valor}[#{@id.tamA[0]}][#{@id.tamA[1]}] \n"
+			else
+				puts "ess #{e}"
+				arr[@id.tamA[0].to_i] = @expresion.valores()
+				puts "Realizamos la	asignacion de: #{@expresion.valores()} a #{@id.valor}[#{@id.elemento.valor}] \n"
+			end
+			$tabla[@id.valor] = arr
+			#puts $tabla
+		end
 	end
 end
 

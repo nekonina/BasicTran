@@ -1,5 +1,9 @@
 #	Irina Marcano 13-10805
 
+$dim = []
+$tipo = ''
+
+
 $simbolos = {
 	'Punto' => ".",				
 	'Coma' => ",",				
@@ -8,7 +12,8 @@ $simbolos = {
 	'ParCierra' => ")" ,
 	'CorcheteAbre' => "[" ,		
 	'CorcheteCierre' => "]" ,		
-	'Resta' =>"-" ,	
+	'Resta' =>"-" ,
+	'MenosUnario' =>"-" ,
 	'Suma' => "+" ,
 	'Desigualdad' => "/=" ,		
 	'PuntoYComa' => ";" ,
@@ -48,11 +53,10 @@ class Asignacion
 		@tipo = @expresion.tipo
 		@valor = expresion
 
-		if @id.tipo != "variable" && @id.tipo != "arreglo"
+		if @id.tipo != "variable" && @id.tipo != "arregloA"
 			puts "\n Para realizar un asignacion el identificador debe ser una variable definida"
 			exit
 		end
-
 	end
 
 	def to_s(tab)
@@ -98,7 +102,7 @@ class Print
 
 	def initialize(salida)
 		@salida = salida
-		if @salida.tipo != "entero" && @salida.tipo != "caracter" && @salida.tipo != "booleano" &&  @salida.tipo != "variable"
+		if @salida.tipo != "entero" && @salida.tipo != "caracter" && @salida.tipo != "booleano" &&  @salida.tipo != "variable" && @salida.tipo != "arregloA"
 			puts "El argumento que desea imprimir no es valido"
 			exit	
 		end
@@ -450,26 +454,71 @@ class ValorArreglo
 	#
 	# argumentos: argumentos correspondiente a la declaracion, referente a la declaracion de un conjunto de variable del mismo tipo
 	# tipo: tipo de la variable que se esta declarando
-	attr_accessor  :id, :elemento, :tipo
-
+	attr_accessor  :id, :elemento, :tipo, :valor, :tipoI, :tamA
+	$tamA = []
 	def initialize(id, elemento)
+		if $tamA.length == 2
+			$tamA = []
+		end
 		@id = id
+		@valor = @id.valor
 		@elemento= elemento
-		@tipo = "arreglo"
-		if @id.tipo != 'variable' 
+		$tamA << (@elemento.valor)
+		@tamA = $tamA
+		@tipo = "arregloA"
+		puts"#{@valor} #{ @tamA}"
+		if @id.tipo != 'variable' && @id.tipo != 'arregloA'
 			puts "Para acceder a un arreglo el identificador debe ser una variable"
 			exit
 		elsif @elemento.tipo != "entero"
 			puts "Para acceder a la posicion de un arreglo debe hacerlo con un entero"
 			exit
+		elsif @elemento.valor.to_i < 0
+			puts "Los indices para acceder a un arreglo deben ser positivos"
+			exit
 		end
-			
-
+		puts @tamA
 	end
 
 	def to_s(tab)	
 		s =  "\n"+(" "*(tab+2)) + "Arreglo: " + @id.to_s(tab+4)
 		s <<  (" "*(tab+2)) + "Elemento:" + @elemento.to_s(tab+4) + "\n"
+		return s
+	end
+end
+class ValorMatriz
+
+	# == Atributos
+	#
+	# argumentos: argumentos correspondiente a la declaracion, referente a la declaracion de un conjunto de variable del mismo tipo
+	# tipo: tipo de la variable que se esta declarando
+	attr_accessor  :id, :elemento, :elemento2, :tipo, :valor, :tipoI
+
+	def initialize(id, elemento, elemento2)
+		puts "pase por aqiu"
+		@id = id
+		@valor = @id.valor
+		@elemento= elemento
+		@elemento2= elemento2
+
+		@tipo = "arregloA"
+		if @id.tipo != 'variable' && @id.tipo != 'arregloA'
+			puts "Para acceder a una matriz el identificador debe ser una variable"
+			exit
+		elsif @elemento.tipo != "entero" && @elemento2.tipo != "entero"
+			puts "Para acceder a la posicion de una matriz ambos indices deben ser enteros"
+			exit
+		elsif @elemento.valor.to_i < 0 &&  @elemento2.valor.to_i < 0
+			puts "Los indices para acceder a una matriz deben ser positivos"
+			exit
+		end
+
+	end
+
+	def to_s(tab)	
+		s =  "\n"+(" "*(tab+2)) + "Arreglo: " + @id.to_s(tab+4)
+		s <<  (" "*(tab+2)) + "Posicion:" + @elemento.to_s(tab+4) + "\n"
+		s <<  (" "*(tab+2)) + "Posicion:" + @elemento2.to_s(tab+4) + "\n"
 		return s
 	end
 end
@@ -482,12 +531,17 @@ class Argumento
 	# id: identificador del arreglo
 	# exp: expresion que se le asignara a la nueva variable
 	# arg: permite la definicion de los argumentos de varias variables
-	attr_accessor  :id,:exp, :arg, :tipo, :valorR, :ini
+	attr_accessor  :id,:exp, :arg, :tipo, :valorR,  :tipoId, :tipoR, :tam
 
 	def initialize(id,exp, arg)
-		@id = id
+
+		@id = id.valor
+		@tipoId = id.tipo
 		@exp = exp
-		@arg= arg	
+		@arg= arg
+		$dim = []
+		$tipo =''
+		@tam = 0 
 		if exp != nil
 			@tipo = @exp.tipo
 		end
@@ -517,13 +571,14 @@ class ArgumentoId
 	# id: identificador del arreglo
 	# exp: expresion que se le asignara a la nueva variable
 	# arg: permite la definicion de los argumentos de varias variables
-	attr_accessor  :id,:exp, :arg, :ini
+	attr_accessor  :id,:exp, :arg,  :tipoId, :tipo
 
 	def initialize(id,exp, arg)
-		@id = id
+		@id = id.valor
 		@exp = exp
+		@tipoId = id.tipo
 		@arg= arg
-		@ini = false
+		$tipo =''
 	end
 
 	def to_s(tab)
@@ -584,7 +639,7 @@ class Tipo
 	end
 
 	def to_s(tab)
-		return (" "*(tab+6))+ "Tipo: "  + @tipo.to_s() + "\n"
+		return (" "*(tab+4))+ "Tipo: "  + @tipo.to_s() + "\n"
 	end
 end
 
@@ -613,13 +668,27 @@ class Char < Tipo
 end
 
 class Matriz < Tipo
+	attr_accessor :tipo, :tipoI, :dim
+
 	def initialize( tam, tipo)
-		@tam = tam
-		@tipoI = tipo
-		@tipo = "arreglo"
+		
+		@tam = tam.valor
+		if tam.tipo != 'entero' && tam.tipo != 'variable'
+			puts "El tamaño para el arreglo debe ser un entero"
+			exit
+		end
+		@tipoAux = tipo
+		if @tipoAux.tipo != 'arreglo'
+			$tipo = @tipoAux.tipo	
+		end
+		@tipoI = $tipo
+		$dim.unshift(tam.valor.to_i)
+		@dim = $dim
+		@tipo = "arreglo"	
 	end
+
 	def to_s(tab)
-		return (" "*(tab+6))+ "Arreglo de tamaño: "  + @tam.to_s(tab+4)+ "\n"+ @tipoI.to_s(tab+4)
+		return (" "*(tab+2))+ "Arreglo de tamaño: "  + @tam.to_s()+ "\n"+(" "*(tab+2))+ "Tipo del arreglo: " +  @tipoI.to_s()+ "\n"
 	end
 end
 
@@ -635,7 +704,6 @@ class ExpresionDosOper
 		@oper = oper
 		@valor = @op1.valor + $simbolos[@oper] + @op2.valor
 
-
 		if @oper == "Concatenacion"
 			if @op1.tipo == "caracter" && @op2.tipo == "caracter"
 				@tipo = "caracter"
@@ -649,16 +717,25 @@ class ExpresionDosOper
 				@tipo = "entero"
 			elsif @op1.tipo == "variable" && @op2.tipo == "entero" || @op1.tipo == "entero" && @op2.tipo == "variable" || @op1.tipo == "variable" && @op2.tipo == "variable"
 				@tipo = "variable"
+			elsif @op1.tipo == "arregloA" && @op2.tipo == "entero" || @op1.tipo == "entero" && @op2.tipo == "arregloA" || @op1.tipo == "arregloA" && @op2.tipo == "arregloA"
+				@tipo = "arregloA"
 			else @tipo = "error"
 			end
 		elsif 
-			if @oper == "Punto" && @op1.tipo == "variable"
+			if @oper == "Punto" && @op1.tipo == "variable" 
 				if @op2.tipo == "entero"
 					@tipo = "variable"
 				else
 					puts "\n El operando '#{@op2.valor}'debe ser tipo entero "
 					exit
-				end                                                                                                            
+				end 
+			elsif @oper == "Punto" && @op1.tipo == "arregloA" 
+				if @op2.tipo == "entero"
+					@tipo = "arregloA"
+				else
+					puts "\n El operando '#{@op2.valor}'debe ser tipo entero "
+					exit
+				end                                                                                                         
 			elsif  @oper == "Punto"
 				puts "\n El identificador '#{@op1.valor}' debe ser una variable declarada"
 				exit
@@ -669,11 +746,12 @@ class ExpresionDosOper
 				@tipo = "booleano"
 			elsif @op1.tipo == "variable" && (@op2.tipo == "booleano" || @op2.tipo == "entero"  ) || (@op1.tipo == "booleano" || @op1.tipo == "entero"  ) && @op2.tipo == "variable" || @op1.tipo == "variable" && @op2.tipo == "variable"
 				@tipo = "variable"
+			elsif @op1.tipo == "arregloA" && (@op2.tipo == "booleano" || @op2.tipo == "entero"  ) || (@op1.tipo == "booleano" || @op1.tipo == "entero"  ) && @op2.tipo == "arregloA" || @op1.tipo == "arregloA" && @op2.tipo == "arregloA"
+				@tipo = "arregloA"
 			else @tipo = "error"
 			end
 		end
 
-		#puts @tipo
 		#puts @op2.valor
 		
 		if @tipo == 'error'
@@ -824,6 +902,7 @@ class ExpresionUnOperDer
 		@op = op
 		@oper = oper
 		@valor = $simbolos[@oper] + @op.valor
+
 		if @oper== "Not" && @op.tipo == "booleano"
 				@tipo = "booleano"
 		elsif @oper== "MenosUnario" && @op.tipo == "entero"
@@ -833,6 +912,8 @@ class ExpresionUnOperDer
 				@tipo = "caracter"
 			elsif @op.tipo == "variable"
 				@tipo = "variable"
+			elsif @op.tipo == "arregloA"
+				@tipo = "arregloA"
 			else
 				@tipo = "error"
 			end
@@ -854,6 +935,7 @@ class Not < ExpresionUnOperDer
 
 	def initialize(op)
         super(op,"Not")
+        
     end
 end
 
@@ -889,8 +971,11 @@ class ExpresionUnOperIzq
 	def initialize(op, oper)
 		@op = op
 		@oper = oper
-		@valor = @op.valor 
-		@tipo = "caracter"
+		@valor = @op.valor
+		if @op.tipo != 'variable' && @op.tipo != 'caracter' &&  @op.tipo != 'arregloA'
+			puts "Esta operacion #{@oper} solo la puedes realizar sobre variables o caracteres"
+			exit
+		end
 	end
 
 	def to_s(tab)
@@ -902,10 +987,10 @@ end
 class SiguienteCar < ExpresionUnOperIzq
 
 	def initialize(op)
-        super(op,"")
+        super(op,"SiguienteCar")
     end
     def to_s(tab)
-		return (" "*tab) + "SiguienteCar de: " + @op.to_s() + "\n"
+		return (" "*tab) + "SiguienteCar de: " + @op.to_s(tab+4) + "\n"
 	end
 end
 
@@ -913,10 +998,10 @@ end
 class AnteriorCar < ExpresionUnOperIzq
 
     def initialize(op)
-        super(op,"")
+        super(op,"AnteriorCar")
     end
     def to_s(tab)
-		return (" "*tab) + "AnteriorCar de: " + @op.to_s()
+		return (" "*tab) + "AnteriorCar de: " + @op.to_s(tab+4)+ "\n"
 	end
 end
 

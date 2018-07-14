@@ -1,22 +1,10 @@
 with 
-	var num , cat: int
+	var num <-1 , cat: int
 	var f, car <- false , pepe<- true: bool
-	var a : array [3] of int
+	var a : array [3] of array [4] of int
 begin
-a[1] <- 8;
- cat <- 6/2;
- read cat;
- for k from 5 to (9*2+1) [step 2]->
-  cat <- cat + 2 ;
- end
-if (cat <= 7)  ->
- 	 cat <- cat + 2 ;
- 	 print cat;
- end
- if (cat <= 5)  ->
- 	 cat <- 10 ;
-otherwise ->
- 	 print cat;
- end
 
+a[1][1] <- 4;
+cat <- a[1][1];
+a[0][0] <- cat + 2;
 end

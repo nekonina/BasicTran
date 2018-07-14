@@ -34,8 +34,8 @@ def main
                 
                 pars = Parser.new(lexer.listaTokens)
                 ast =  pars.parse
-                #ast.verificacion()
-                #ast.valores()
+                ast.verificacion()
+                ast.valores()
                 puts ast.to_s()
                 rescue ErrorSintactico => e
                     puts e

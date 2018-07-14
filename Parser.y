@@ -17,7 +17,7 @@ class Parser
 
     prechigh
         nonassoc    UMINUS
-        left        '*' '\/' '%'           
+        left        '*' '\/' '%' '[' ']'        
         left        '+' '-' 
         left        '.' 
         left        'not'   
@@ -27,8 +27,7 @@ class Parser
         left        '=' '/=' 
         left        '#' 
         left        '--'   
-        left        '++'
-        left        '[' ']'  
+        left        '++'     
         left        '$'   
         left        '::'  
     preclow
@@ -125,10 +124,10 @@ rule
     Declaracion: Argumentos ':' Tipo                          { result = Declaracion.new(val[0], val[2]) }
                 ;
 
-      Argumentos: 'id' '<-' Expresion                           { result = Argumento.new(val[0].contenido , val[2], nil)}
-                | 'id' '<-' Expresion ',' Argumentos            { result = Argumento.new(val[0].contenido , val[2] , val[4]) }
-                | 'id' ',' Argumentos                           { result = ArgumentoId.new(val[0].contenido , val[2], nil) }
-                | 'id'                                          { result = Argumento.new(val[0].contenido , nil, nil) }
+      Argumentos: Expresion '<-' Expresion                           { result = Argumento.new(val[0] , val[2], nil)}
+                | Expresion'<-' Expresion ',' Argumentos            { result = Argumento.new(val[0] , val[2] , val[4]) }
+                | Expresion ',' Argumentos                           { result = ArgumentoId.new(val[0] , val[2], nil) }
+                | Expresion                                          { result = Argumento.new(val[0] , nil, nil) }
                 ;
 
            Tipo:  'int'                                              { result = Int.new() }
@@ -141,11 +140,13 @@ rule
                |    'true'                                                      { result = True.new()                 }
                |    'false'                                                     { result = False.new()                }
                |    'caracter'                                                  { result = Letra.new(val[0].contenido )       }
+               |    Expresion '[' Expresion ']' '[' Expresion ']'               { result = ValorMatriz.new(val[0],val[2],val[5])}
+               |    Expresion '[' Expresion ']'                                 { result = ValorArreglo.new(val[0],val[2])}
                |    'id'                                                        { result = Variable.new(val[0].contenido)       }
-               |    '#' 'caracter'                                              { result = ValorAscii.new(val[0])     }
+               |    '#' Expresion                                               { result = ValorAscii.new(val[0])     }
                |    Expresion '%'   Expresion                                   { result = Modulo.new(val[0], val[2]) }
-               |    'caracter'  '++'                                            { result = SiguienteCar.new(val[0].contenido)   }
-               |    'caracter'  '--'                                            { result = AnteriorCar.new(val[0].contenido)    }
+               |    Expresion  '++'                                             { result = SiguienteCar.new(val[0])   }
+               |    Expresion  '--'                                             { result = AnteriorCar.new(val[0])    }
                |    Expresion '::'  Expresion                                   { result = Concatenacion.new(val[0], val[2])   }
                |    Expresion '*'   Expresion                                   { result = Multiplicacion.new(val[0], val[2])  }
                |    Expresion '+'   Expresion                                   { result = Suma.new(val[0], val[2])            }
@@ -165,7 +166,7 @@ rule
                |    '-' Expresion = UMINUS                                            { result = MenosUnario.new(val[1])    }
                |    '(' Expresion ')'                                                 { result = val[1]                       }
                |    '[' Expresion ']'                                                 { result = val[1]                       }
-               |    Expresion '[' Expresion ']'                                       { result = ValorArreglo.new(val[0],val[2])}
+               
                ;
 
 ---- header ----
